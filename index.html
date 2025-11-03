@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>AI 헬스코치 Web MVP v0.2</title>
+  <link rel="stylesheet" href="styles.css"/>
+  <!-- TF.js & Pose Detection (MoveNet Lightning) -->
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.16.0/dist/tf.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/pose-detection@3.6.1/dist/pose-detection.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose@0.5/pose.js"></script>
+</head>
+<body>
+  <header>
+    <h1>AI 헬스코치 Web MVP <span class="badge">v0.2</span></h1>
+    <p>카메라 기반 실시간 폼 교정 · 루틴 카드 · 색상 피드백 · 휴식 타이머 · 로컬 분석</p>
+  </header>
+
+  <main>
+    <!-- Onboarding -->
+    <section class="card">
+      <h2>1) 온보딩: 기본정보 및 목표</h2>
+      <form id="onboardingForm">
+        <div class="grid">
+          <label>키(cm)<input type="number" id="height" min="100" max="230" required></label>
+          <label>몸무게(kg)<input type="number" id="weight" min="30" max="200" required></label>
+          <label>경험도
+            <select id="experience">
+              <option value="beginner">초보</option>
+              <option value="intermediate">중급</option>
+              <option value="advanced">상급</option>
+            </select>
+          </label>
+          <label>목표 체중(kg)<input type="number" id="targetWeight" min="30" max="200"></label>
+          <label>기간(주)<input type="number" id="periodWeeks" min="4" max="52" value="12"></label>
+        </div>
+        <button type="submit">저장</button>
+        <span id="saveStatus" class="status"></span>
+      </form>
+    </section>
+
+    <!-- Routine -->
+    <section class="card">
+      <h2>2) 오늘의 루틴</h2>
+      <div class="row">
+        <button id="generateRoutine">루틴 생성</button>
+        <button id="toggleRoutineView" class="ghost">JSON 보기</button>
+      </div>
+      <div id="routineCards" class="routine-cards"></div>
+      <pre id="routineJson" class="hidden"></pre>
+    </section>
+
+    <!-- Session -->
+    <section class="card">
+      <h2>3) 운동 세션 (웹캠)</h2>
+      <div class="session-grid">
+        <div class="video-wrap">
+          <video id="video" playsinline></video>
+          <canvas id="overlay"></canvas>
+          <div id="feedback" class="feedback">준비됐어요. 전체 몸이 보이도록 거리 유지!</div>
+        </div>
+        <div class="controls">
+          <div class="row">
+            <label>운동 선택
+              <select id="exercise">
+                <option value="squat">스쿼트</option>
+                <option value="deadlift">데드리프트</option>
+                <option value="bench">벤치프레스</option>
+              </select>
+            </label>
+            <button id="previewBtn" class="ghost">카메라 미리보기</button>
+          </div>
+
+          <div class="row">
+            <button id="startBtn">카메라 시작</button>
+            <button id="stopBtn" disabled>중지</button>
+            <button id="restBtn" class="ghost" disabled>세트 완료 · 휴식 시작</button>
+          </div>
+
+          <div class="stats">
+            <div>정확도(%) <span id="accuracy">-</span></div>
+            <div>반복수 <span id="reps">0</span></div>
+            <div>세트 <span id="sets">1</span></div>
+          </div>
+
+          <div class="timer hidden" id="restTimer">
+            휴식 <span id="restSec">60</span>초 남음
+          </div>
+          <div class="tip">TIP: 카메라와 거리는 팔을 뻗었을 때 화면에 전신이 딱 들어오는 정도가 좋아요.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Report -->
+    <section class="card">
+      <h2>4) 결과 요약</h2>
+      <div id="report"></div>
+    </section>
+
+    <!-- Local Analytics -->
+    <section class="card">
+      <h2>5) 내 기록(로컬)</h2>
+      <button id="showAnalytics" class="ghost">기록 새로고침</button>
+      <pre id="analyticsView"></pre>
+    </section>
+  </main>
+
+  <footer>
+    <p>© ADIMO AI Coach – 브라우저 데모 · 데이터는 로컬에만 저장됩니다.</p>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
